@@ -3,6 +3,7 @@ import json
 import random
 from logic.calcolo_ocean import calcola_punteggi
 from logic.recommender import genera_raccomandazioni
+from logic.database import ottieni_item_per_genere
 
 # Configurazione della pagina
 st.set_page_config(page_title="Personality Recommender", page_icon="🧠", layout="centered")
@@ -40,7 +41,7 @@ def main():
         # Assegniamo una risposta casuale (da 1 a 5) per ogni domanda del file JSON
         for domanda in domande:
             st.session_state[domanda['id']] = random.choice(opzioni)
-            
+
     # === FINE AREA DI DEBUG ===
 
 
@@ -61,7 +62,7 @@ def main():
         
         for i, domanda in enumerate(domande):
             risposta_selezionata = st.radio(
-                label=f"{i+1}. {domanda['text']}",
+                label=f"{i+1}. {domanda['text'], domanda["domain"]}",
                 options=opzioni,
                 index=2, 
                 key=domanda['id'] 
@@ -135,26 +136,72 @@ def main():
         with tab_libri:
             st.write("I 3 generi letterari perfetti per te:")
             for i in range(min(3, len(ranking_libri))):
-                # Rimuoviamo il prefisso "Libri: " per una visualizzazione più pulita
-                nome_pulito = ranking_libri[i]["genere"].replace("Libri: ", "")
+                genere_completo = ranking_libri[i]["genere"] # Es: "Libri: Fantasy"
+                nome_pulito = genere_completo.replace("Libri: ", "")
                 distanza = ranking_libri[i]["distanza"]
-                st.write(f"{i+1}. **{nome_pulito}** (Distanza: {distanza:.2f})")
+                
+                # Intestazione del genere
+                st.markdown(f"### {i+1}. {nome_pulito} *(Distanza: {distanza:.2f})*")
+                
+                # --- CHIAMATA A ELASTICSEARCH ---
+                libri_consigliati = ottieni_item_per_genere("catalogo_libri", genere_completo, "rating")
+                
+                if libri_consigliati:
+                    for libro in libri_consigliati:
+                        if "titolo" in libro:
+                            # Uso st.info o st.success per formattare bene il box del libro
+                            prezzo = libro.get('prezzo', 'N/D')
+                            rating = libro.get('rating', 'N/D')
+                            st.info(f"**{libro['titolo']}** (Prezzo: £{prezzo} - Rating: {rating})")
+                        else:
+                            st.error(libro.get('titolo', 'Errore DB'))
+                else:
+                    st.warning("Nessun libro trovato per questo genere nel catalogo.")
+                st.write("---")
                 
         # 4. Popoliamo la scheda Film
         with tab_film:
             st.write("I 3 generi cinematografici perfetti per te:")
             for i in range(min(3, len(ranking_film))):
-                nome_pulito = ranking_film[i]["genere"].replace("Film: ", "")
+                genere_completo = ranking_film[i]["genere"] # Es: "Film: Comedy"
+                nome_pulito = genere_completo.replace("Film: ", "")
                 distanza = ranking_film[i]["distanza"]
-                st.write(f"{i+1}. **{nome_pulito}** (Distanza: {distanza:.2f})")
                 
-        # 5. Popoliamo la scheda Musica
+                # Intestazione del genere
+                st.markdown(f"### {i+1}. {nome_pulito} *(Distanza: {distanza:.2f})*")
+                
+                # --- CHIAMATA A ELASTICSEARCH ---
+                film_consigliati = ottieni_item_per_genere("catalogo_film", genere_completo, "rating")
+                
+                if film_consigliati:
+                    for film in film_consigliati:
+                        if "titolo" in film and "regista" in film:
+                            st.info(f"**{film['titolo']}** (Regia: {film['regista']} - Voto: {film['rating']})")
+                        else:
+                            st.error(film.get('titolo', 'Errore DB'))
+                else:
+                    st.warning("Nessun film trovato per questo genere nel catalogo.")
+                st.write("---")
+                
         with tab_musica:
             st.write("I 3 generi musicali perfetti per te:")
             for i in range(min(3, len(ranking_musica))):
-                nome_pulito = ranking_musica[i]["genere"].replace("Musica: ", "")
+                genere_completo = ranking_musica[i]["genere"]
+                nome_pulito = genere_completo.replace("Musica: ", "")
                 distanza = ranking_musica[i]["distanza"]
-                st.write(f"{i+1}. **{nome_pulito}** (Distanza: {distanza:.2f})")
+                
+                st.markdown(f"### {i+1}. {nome_pulito} *(Distanza: {distanza:.2f})*")
+                
+                # --- CHIAMATA A ELASTICSEARCH ---
+                brani_consigliati = ottieni_item_per_genere("catalogo_musica", genere_completo, "popolarita")
+                
+                if brani_consigliati:
+                    for brano in brani_consigliati:
+                        if "titolo" in brano and "artista" in brano:
+                            st.success(f"**{brano['titolo']}** (Di: {brano['artista']} - Popolarità: {brano['popolarita']})")
+                else:
+                    st.warning("Nessun brano trovato per questo genere nel catalogo.")
+                st.write("---")
 
 
 
