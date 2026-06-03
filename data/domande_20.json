@@ -1,0 +1,142 @@
+[
+    {
+        "id": "7d93e1ca-46e8-4a30-9623-42a80c9b420c",
+        "text": "Mi piace prendermela comoda",
+        "keyed": "minus",
+        "domain": "E",
+        "facet": 4
+    },
+    {
+        "id": "d07b6c67-0d02-4948-a997-bb84ac234cd8",
+        "text": "Sono sempre in movimento",
+        "keyed": "plus",
+        "domain": "E",
+        "facet": 4
+    },
+    {
+        "id": "c63e6121-c3ed-40cc-abc2-c1e6ea1e0858",
+        "text": "Mi fido di quello che dicono le persone",
+        "keyed": "plus",
+        "domain": "A",
+        "facet": 1
+    },
+    {
+        "id": "e7b31bdc-5f6b-40ec-ba91-f5919b0f170e",
+        "text": "Guardo al lato positivo della vita",
+        "keyed": "plus",
+        "domain": "E",
+        "facet": 6
+    },
+    {
+        "id": "08ff6dca-02a5-4aeb-aaa4-2ecf2526f143",
+        "text": "Mi piace fare voli pindarici",
+        "keyed": "plus",
+        "domain": "O",
+        "facet": 1
+    },
+        {
+        "id": "da8e6ed1-2296-4c58-8fdb-66f2f591989b",
+        "text": "Perdo le staffe",
+        "keyed": "plus",
+        "domain": "N",
+        "facet": 2
+    },
+    {
+        "id": "f12c3d9d-1d12-4aa6-ad2e-009cd0651cbb",
+        "text": "Faccio più di quello che gli altri si aspettano da me",
+        "keyed": "plus",
+        "domain": "C",
+        "facet": 4
+    },
+    {
+        "id": "fd50e1ca-d9e0-4037-a7a1-a191d4db2d96",
+        "text": "Sono empatico nei confronti dei senzatetto",
+        "keyed": "plus",
+        "domain": "A",
+        "facet": 6
+    },
+    {
+        "id": "a7f43928-8982-4ed5-8656-7a80346fe979",
+        "text": "Sono attaccato ai metodi convenzionali",
+        "keyed": "minus",
+        "domain": "O",
+        "facet": 4
+    },
+    {
+        "id": "d32bd062-4eb2-401b-99b2-e7afea39ca9b",
+        "text": "Non mi infastidisco facilmente",
+        "keyed": "minus",
+        "domain": "N",
+        "facet": 2
+    },
+    {
+        "id": "adf33f9f-45bd-43e3-af25-4c491176d97f",
+        "text": "Mi dimentico spesso di rimettere le cose al loro posto",
+        "keyed": "minus",
+        "domain": "C",
+        "facet": 2
+    },
+    {
+        "id": "51403620-968c-42fa-a772-65ba5ad8396f",
+        "text": "Faccio difficoltà ad iniziare un lavoro",
+        "keyed": "minus",
+        "domain": "C",
+        "facet": 5
+    },
+    {
+        "id": "e1e804c7-4a1d-498f-8610-f95147af9d1d",
+        "text": "Mi piace fare letture impegnative",
+        "keyed": "plus",
+        "domain": "O",
+        "facet": 5
+    },
+    {
+        "id": "0de0f900-cede-4538-9c00-5da4f830b028",
+        "text": "Insulto le persone",
+        "keyed": "minus",
+        "domain": "A",
+        "facet": 4
+    },
+    {
+        "id": "b7e0e393-9b21-4e0d-adf3-8f28fb5b9d87",
+        "text": "Non mi sento in grado di affrontare le cose",
+        "keyed": "plus",
+        "domain": "N",
+        "facet": 6
+    },
+    {
+        "id": "17910a55-a64a-4ed0-8b46-293e2fa2fe03",
+        "text": "Sono un tipo vendicativo",
+        "keyed": "minus",
+        "domain": "A",
+        "facet": 4
+    },
+    {
+        "id": "c7f53c3c-2e77-432f-bb71-7470b67d3aa9",
+        "text": "Porto a termine con successo i miei compiti",
+        "keyed": "plus",
+        "domain": "C",
+        "facet": 1
+    },
+    {
+        "id": "9f9166f0-fa94-4c14-a91d-3eecd8395794",
+        "text": "Evito il contatto con le persone",
+        "keyed": "minus",
+        "domain": "E",
+        "facet": 1
+    },
+    {
+        "id": "49a85680-53aa-4208-86b5-dccc7a6f8e37",
+        "text": "Sono in grado di controllare i miei impulsi",
+        "keyed": "minus",
+        "domain": "N",
+        "facet": 5
+    },
+    {
+        "id": "95a3f20c-f933-4d19-a2c1-a7dbdf63c562",
+        "text": "Evito discussioni filosofiche",
+        "keyed": "minus",
+        "domain": "O",
+        "facet": 5
+    }
+]
