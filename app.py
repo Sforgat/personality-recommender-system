@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import random
 from logic.calcolo_ocean import calcola_punteggi
 from logic.recommender import genera_raccomandazioni
 
@@ -27,7 +28,22 @@ def main():
         "4 - Moderatamente preciso",
         "5 - Molto preciso"
     ]
+
+
     
+    # === INIZIO AREA DI DEBUG (Da cancellare prima della consegna) ===
+    st.info("🛠️ Modalità Sviluppatore attiva")
+    if st.button("🎲 Compila tutto a caso"):
+        # Selezioniamo casualmente "Uomo" o "Donna"
+        st.session_state['scelta_genere_test'] = random.choice(["Uomo", "Donna"])
+        
+        # Assegniamo una risposta casuale (da 1 a 5) per ogni domanda del file JSON
+        for domanda in domande:
+            st.session_state[domanda['id']] = random.choice(opzioni)
+            
+    # === FINE AREA DI DEBUG ===
+
+
     # Usiamo un form per raggruppare tutte le risposte
     with st.form(key="questionario_ipip"):
         st.subheader("Dati Demografici")
