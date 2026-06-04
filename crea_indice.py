@@ -158,7 +158,7 @@ def indicizza_libri():
                 "titolo": row['Title'],
                 "prezzo": str(row.get('Price')),
                 "genere_motore": genere_formattato,
-                "rating": voto_numerico  # Ora è un VERO numero!
+                "rating": voto_numerico  
             }
         }
         azioni.append(doc)
