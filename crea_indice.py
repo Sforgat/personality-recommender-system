@@ -129,7 +129,7 @@ def indicizza_musica():
     
 
 def indicizza_libri():
-    print("📚 Inizio indicizzazione Libri...")
+    print("Inizio indicizzazione Libri...")
     df = pd.read_csv("data/bookstoscrape.csv", encoding="latin-1")
     df = df.fillna("")
     
@@ -165,12 +165,12 @@ def indicizza_libri():
         
     try:
         helpers.bulk(es.options(request_timeout=300, max_retries=5), azioni, chunk_size=100)
-        print(f"✅ Inseriti {len(azioni)} libri.")
+        print(f"Inseriti {len(azioni)} libri.")
     except BulkIndexError as e:
-        print("🚨 ERRORE SUI DATI! Ecco i dettagli del primo documento fallito:")
+        print("ERRORE SUI DATI! Ecco i dettagli del primo documento fallito:")
         print(e.errors[0])
     except Exception as e:
-        print(f"🚨 ERRORE DI RETE/TIMEOUT: {e}")
+        print(f"ERRORE DI RETE/TIMEOUT: {e}")
     
 
 if __name__ == "__main__":

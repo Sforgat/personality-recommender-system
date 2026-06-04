@@ -108,7 +108,7 @@ def approccio_rule_based(profilo_norm, genere_utente):
     # Regole specifiche per genere (Libri):
     if genere_utente == "female" and N >= 3.0:
         raccomandazioni_forti.append("Libri: Crime")
-        raccomandazioni_forti.append("Libri: Horro")
+        raccomandazioni_forti.append("Libri: Horror")
     if genere_utente == "male" and E >= 3.6:
         raccomandazioni_forti.append("Libri: Humor")
 
