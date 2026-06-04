@@ -347,7 +347,7 @@ def main():
 
     # FASE 4: SCHERMATA RACCOMANDAZIONI
     elif st.session_state.current_page == "recommendations":
-        st.title("🎯 Le Tue Raccomandazioni")
+        st.title("Le Tue Raccomandazioni")
         st.write("In base al tuo profilo psicologico calcolato, ecco i contenuti ideali suddivisi per genere affine:")
         
         mappa_genere = {"Preferisco non specificare": "all", "Uomo": "male", "Donna": "female"}
@@ -361,7 +361,7 @@ def main():
         ranking_film = [r for r in ranking if r["genere"].startswith("Film:")]
         ranking_musica = [r for r in ranking if r["genere"].startswith("Musica:")]
         
-        tab_libri, tab_film, tab_musica = st.tabs(["📚 Libri", "🎬 Film", "🎵 Musica"])
+        tab_libri, tab_film, tab_musica = st.tabs(["Libri", "Film", "Musica"])
         
         with tab_libri:
             cols_libri = st.columns(3)
@@ -426,6 +426,17 @@ def main():
                 st.session_state.scelta_genere = "Preferisco non specificare"
                 st.session_state.dev_mode = False
                 st.rerun()
+
+        if st.session_state.get("dev_mode", False):
+            st.write("")
+            st.markdown("### [DEV MODE] Diagnostica Motore Raccomandazioni")
+            match = motore_raccomandazione.get("match_esatti", [])
+            if len(match) > 0:
+                st.success("Affinità assolute (100% Match) individuate dal sistema:")
+                for item in match:
+                    st.write(f"- **{item}**")
+            else:
+                st.info("Nessun match esatto al 100% generato con i dati attuali.")
 
 if __name__ == "__main__":
     main()
