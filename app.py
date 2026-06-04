@@ -2,6 +2,8 @@ import streamlit as st
 import json
 import random
 import math
+import pandas as pd
+import altair as alt
 from logic.calcolo_ocean import calcola_punteggi
 from logic.recommender import genera_raccomandazioni
 from logic.database import ottieni_item_per_genere
@@ -9,7 +11,7 @@ from logic.database import ottieni_item_per_genere
 # 1. Configurazione della pagina
 st.set_page_config(page_title="Personality Recommender", page_icon="🧠", layout="centered")
 
-# Custom CSS per le card delle domande e box speciali
+# Custom CSS per le card delle domande
 st.markdown("""
     <style>
     .question-box {
@@ -27,24 +29,16 @@ st.markdown("""
         color: #1E293B;
         line-height: 1.4;
     }
-    .dominant-box {
-        background-color: #F0FDF4;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #BBF7D0;
-        border-left: 6px solid #22C55E;
-        margin-bottom: 25px;
-    }
     </style>
 """, unsafe_allow_html=True)
 
 # Dizionario per mappare le sigle OCEAN ai nomi completi in italiano
 NOMI_OCEAN = {
-    'O': "Apertura all'Esperienza (Openness)",
-    'C': "Coscienziosità (Conscientiousness)",
-    'E': "Estroversione (Extraversion)",
-    'A': "Gradevolezza (Agreeableness)",
-    'N': "Nevroticismo (Neuroticism)"
+    'O': "Apertura all'Esperienza",
+    'C': "Coscienziosità",
+    'E': "Estroversione",
+    'A': "Gradevolezza",
+    'N': "Nevroticismo"
 }
 
 # Funzione per caricare i dati del questionario
@@ -58,8 +52,6 @@ def carica_domande():
             return json.load(f)
 
 def main():
-    st.title("Scopri il tuo Profilo Psicologico")
-    
     # 2. INIZIALIZZAZIONE STATO
     if "current_page" not in st.session_state:
         st.session_state.current_page = 0
@@ -67,6 +59,8 @@ def main():
         st.session_state.risposte_utente = {}
     if "scelta_genere" not in st.session_state:
         st.session_state.scelta_genere = "Preferisco non specificare"
+    if "dev_mode" not in st.session_state:
+        st.session_state.dev_mode = False
         
     domande = carica_domande()
     total_domande = len(domande)
@@ -85,12 +79,12 @@ def main():
     
     # === AREA DI DEBUG ===
     if st.session_state.current_page <= total_pagine:
-        st.info("🛠️ Modalità Sviluppatore attiva")
-        if st.button("🎲 Compila tutto a caso", use_container_width=True):
+        st.info("Modalità Sviluppatore attiva")
+        if st.button("Compila tutto a caso", use_container_width=True):
             st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
+            st.session_state.dev_mode = True
             for domanda in domande:
                 st.session_state.risposte_utente[domanda['id']] = random.choice(opzioni)
-            # Salta direttamente alla pagina dei risultati (total_pagine + 1)
             st.session_state.current_page = total_pagine + 1
             st.rerun()
         st.divider()
@@ -99,13 +93,14 @@ def main():
     
     # FASE A: Onboarding Genere (Pagina 0)
     if st.session_state.current_page == 0:
+        st.title("Scopri il tuo Profilo Psicologico")
         st.write("Compila il seguente test per permetterci di raccomandarti i migliori film, libri e programmi TV basati sulla tua vera personalità.")
-        st.subheader("Prima di iniziare: Dati Demografici")
+        st.subheader("Prima di iniziare:")
         opzioni_genere = ["Preferisco non specificare", "Uomo", "Donna"]
         def_genere_idx = opzioni_genere.index(st.session_state.scelta_genere)
         
         st.session_state.scelta_genere = st.radio(
-            "Identità di genere (opzionale, utilizzato per raffinare l'algoritmo di raccomandazione):",
+            "Identità di genere:",
             options=opzioni_genere,
             index=def_genere_idx,
             horizontal=True
@@ -118,14 +113,14 @@ def main():
 
     # FASE B: Quiz a blocchi (Pagine da 1 a N)
     elif st.session_state.current_page <= total_pagine:
+        st.title("Scopri il tuo Profilo Psicologico")
         quiz_page = st.session_state.current_page - 1
         
         start_idx = quiz_page * DOMANDE_PER_PAGINA
         end_idx = min(start_idx + DOMANDE_PER_PAGINA, total_domande)
         domande_pagina = domande[start_idx:end_idx]
         
-        progress_val = quiz_page / total_pagine
-        st.progress(progress_val)
+        st.progress(quiz_page / total_pagine)
         st.write(f"**Pagina {quiz_page + 1} di {total_pagine}** (Domande {start_idx + 1} - {end_idx})")
         
         for i, domanda in enumerate(domande_pagina):
@@ -169,24 +164,13 @@ def main():
 
     # FASE C: Schermata dei Risultati Big Five (Pagina N + 1)
     elif st.session_state.current_page == total_pagine + 1:
-        st.success("Test completato con successo!")
+        st.title("I Tuoi Risultati")
         
         # Calcolo dei punteggi
         risultati_ocean = calcola_punteggi(st.session_state.risposte_utente, domande)
         
-        # --- MODIFICA 1: EVIDENZIARE IL TRATTO MAGGIORE ---
+        # Individuazione del tratto maggiore per l'evidenziazione grafica
         tratto_maggiore = max(risultati_ocean, key=risultati_ocean.get)
-        nome_tratto_completo = NOMI_OCEAN[tratto_maggiore]
-        punteggio_massimo = risultati_ocean[tratto_maggiore]
-        
-        st.markdown(f"""
-            <div class="dominant-box">
-                <h3 style="margin:0; color:#166534;"> Tratto Dominante della tua Personalità:</h3>
-                <p style="font-size:20px; font-weight:700; margin:5px 0 0 0; color:#14532D;">
-                    {nome_tratto_completo} ({punteggio_massimo} pt.)
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
         
         st.subheader("Il tuo profilo psicologico completo:")
         col1, col2, col3, col4, col5 = st.columns(5)
@@ -195,19 +179,37 @@ def main():
         col3.metric("Estrovers. (E)", risultati_ocean['E'])
         col4.metric("Gradevol. (A)", risultati_ocean['A'])
         col5.metric("Nevrotic. (N)", risultati_ocean['N'])
-
         st.write("")
-        st.bar_chart(risultati_ocean)
+
+        # Convertiamo i dati in un DataFrame Pandas per Altair
+        dati_grafico = pd.DataFrame([
+            {"Tratto": NOMI_OCEAN[k], "Punteggio": v, "Sigla": k}
+            for k, v in risultati_ocean.items()
+        ])
+        
+        # Creazione del grafico con alt.condition (minuscolo!)
+        istogramma_personalizzato = alt.Chart(dati_grafico).mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
+            x=alt.X("Tratto:N", axis=alt.Axis(labelAngle=0), title="Tratti di Personalità", sort=None),
+            y=alt.Y("Punteggio:Q", title="Punteggio ottenuto"),
+            color=alt.condition(  # <--- Corretto qui!
+                alt.datum.Sigla == tratto_maggiore,
+                alt.value("#10B981"),  # Verde Smeraldo per il tratto dominante
+                alt.value("#4A90E2")   # Blu per tutti gli altri tratti
+            ),
+            tooltip=["Tratto", "Punteggio"]
+        ).properties(height=350)
+        
+        st.altair_chart(istogramma_personalizzato, use_container_width=True)
         st.divider()
 
-        # PULSANTI PRIMA DELLE RACCOMANDAZIONI ---
+        # PULSANTI DI NAVIGAZIONE
         col_actions1, col_actions2 = st.columns([1, 1])
-        
         with col_actions1:
             if st.button("Ripeti il Test", use_container_width=True):
                 st.session_state.current_page = 0
                 st.session_state.risposte_utente = {}
                 st.session_state.scelta_genere = "Preferisco non specificare"
+                st.session_state.dev_mode = False
                 st.rerun()
                 
         with col_actions2:
@@ -215,86 +217,10 @@ def main():
                 st.session_state.current_page = total_pagine + 2
                 st.rerun()
 
-    # SCHERMATA SEPARATA PER LE RACCOMANDAZIONI ---
+    # FASE D: Schermata Separata per le Raccomandazioni (Pagina N + 2)
     else:
-        st.header("Le Tue Raccomandazioni Personalizzate")
-        st.write("In base al tuo profilo psicologico calcolato e alle affinità rilevate, ecco i contenuti ideali per te:")
+        st.title("Le Tue Raccomandazioni")
         
-        # Recupero dati per il motore di raccomandazione
-        mappa_genere = {"Preferisco non specificare": "all", "Uomo": "male", "Donna": "female"}
-        genere_chiave = mappa_genere[st.session_state.scelta_genere]
-        risultati_ocean = calcola_punteggi(st.session_state.risposte_utente, domande)
-        
-        motore_raccomandazione = genera_raccomandazioni(risultati_ocean, genere_chiave)
-        
-        # Match Esatti
-        match = motore_raccomandazione["match_esatti"]
-        if len(match) > 0:
-            st.success("Abbiamo trovato delle affinità assolute!")
-            for item in match:
-                st.write(f"- **{item}**")
-        else:
-            st.info("Abbiamo ordinato le raccomandazioni basandoci sul tuo profilo!")
-            
-        st.write("")
-        ranking = motore_raccomandazione["ranking_completo"]
-        
-        ranking_libri = [r for r in ranking if r["genere"].startswith("Libri:")]
-        ranking_film = [r for r in ranking if r["genere"].startswith("Film:")]
-        ranking_musica = [r for r in ranking if r["genere"].startswith("Musica:")]
-        
-        # Tab Interattivi puliti in una nuova pagina
-        tab_libri, tab_film, tab_musica = st.tabs(["Libri", "Film", "Musica"])
-        
-        with tab_libri:
-            for i in range(min(3, len(ranking_libri))):
-                genere_completo = ranking_libri[i]["genere"]
-                nome_pulito = genere_completo.replace("Libri: ", "")
-                st.markdown(f"### {i+1}. {nome_pulito}")
-                
-                libri_consigliati = ottieni_item_per_genere("catalogo_libri", genere_completo, "rating")
-                if libri_consigliati:
-                    for libro in libri_consigliati:
-                        if "titolo" in libro:
-                            rating = libro.get('rating', 'N/D')
-                            st.info(f"**{libro['titolo']}** (Rating: {rating})")
-                else:
-                    st.warning("Nessun libro trovato in questo genere.")
-                st.write("---")
-                
-        with tab_film:
-            for i in range(min(3, len(ranking_film))):
-                genere_completo = ranking_film[i]["genere"]
-                nome_pulito = genere_completo.replace("Film: ", "")
-                st.markdown(f"### {i+1}. {nome_pulito}")
-                
-                film_consigliati = ottieni_item_per_genere("catalogo_film", genere_completo, "rating")
-                if film_consigliati:
-                    for film in film_consigliati:
-                        if "titolo" in film and "regista" in film:
-                            st.info(f"**{film['titolo']}** (Regia: {film['regista']} - Voto: {film['rating']})")
-                else:
-                    st.warning("Nessun film trovato in questo genere.")
-                st.write("---")
-                
-        with tab_musica:
-            for i in range(min(3, len(ranking_musica))):
-                genere_completo = ranking_musica[i]["genere"]
-                nome_pulito = genere_completo.replace("Musica: ", "")
-                st.markdown(f"### {i+1}. {nome_pulito}")
-                
-                brani_consigliati = ottieni_item_per_genere("catalogo_musica", genere_completo, "popolarita")
-                if brani_consigliati:
-                    for brano in brani_consigliati:
-                        if "titolo" in brano and "artista" in brano:
-                            st.success(f"**{brano['titolo']}** (Di: {brano['artista']}")
-                else:
-                    st.warning("Nessun brano trovato in questo genere.")
-                st.write("---")
-
-        st.divider()
-        
-        # Azioni di fondo pagina per permettere la navigazione
         col_back1, col_back2 = st.columns([1, 1])
         with col_back1:
             if st.button("Torna ai tuoi Punteggi", use_container_width=True):
@@ -305,7 +231,81 @@ def main():
                 st.session_state.current_page = 0
                 st.session_state.risposte_utente = {}
                 st.session_state.scelta_genere = "Preferisco non specificare"
+                st.session_state.dev_mode = False
                 st.rerun()
+        
+        st.divider()
+        st.write("In base al tuo profilo psicologico calcolato, ecco i contenuti ideali suddivisi per genere affine:")
+        
+        mappa_genere = {"Preferisco non specificare": "all", "Uomo": "male", "Donna": "female"}
+        genere_chiave = mappa_genere[st.session_state.scelta_genere]
+        risultati_ocean = calcola_punteggi(st.session_state.risposte_utente, domande)
+        
+        motore_raccomandazione = genera_raccomandazioni(risultati_ocean, genere_chiave)
+        
+        if st.session_state.get("dev_mode", False):
+            match = motore_raccomandazione["match_esatti"]
+            if len(match) > 0:
+                st.success("DEV MODE] Abbiamo trovato delle affinità assolute:")
+                for item in match:
+                    st.write(f"- **{item}**")
+            st.write("")
+            
+        ranking = motore_raccomandazione["ranking_completo"]
+        ranking_libri = [r for r in ranking if r["genere"].startswith("Libri:")]
+        ranking_film = [r for r in ranking if r["genere"].startswith("Film:")]
+        ranking_musica = [r for r in ranking if r["genere"].startswith("Musica:")]
+        
+        tab_libri, tab_film, tab_musica = st.tabs(["Libri", "Film", "Musica"])
+        
+        with tab_libri:
+            cols_libri = st.columns(3)
+            for i in range(min(3, len(ranking_libri))):
+                with cols_libri[i]:
+                    genere_completo = ranking_libri[i]["genere"]
+                    nome_pulito = genere_completo.replace("Libri: ", "")
+                    st.markdown(f"### {i+1}. {nome_pulito}")
+                    
+                    libri_consigliati = ottieni_item_per_genere("catalogo_libri", genere_completo, "rating")
+                    if libri_consigliati:
+                        for libro in libri_consigliati:
+                            if "titolo" in libro:
+                                rating = libro.get('rating', 'N/D')
+                                st.info(f"**{libro['titolo']}**\n(Rating: {rating})")
+                    else:
+                        st.warning("Nessun libro trovato.")
+                        
+        with tab_film:
+            cols_film = st.columns(3)
+            for i in range(min(3, len(ranking_film))):
+                with cols_film[i]:
+                    genere_completo = ranking_film[i]["genere"]
+                    nome_pulito = genere_completo.replace("Film: ", "")
+                    st.markdown(f"### {i+1}. {nome_pulito}")
+                    
+                    film_consigliati = ottieni_item_per_genere("catalogo_film", genere_completo, "rating")
+                    if film_consigliati:
+                        for film in film_consigliati:
+                            if "titolo" in film and "regista" in film:
+                                st.info(f"**{film['titolo']}**\n(Regia: {film['regista']} - Voto: {film['rating']})")
+                    else:
+                        st.warning("Nessun film trovato.")
+                        
+        with tab_musica:
+            cols_musica = st.columns(3)
+            for i in range(min(3, len(ranking_musica))):
+                with cols_musica[i]:
+                    genere_completo = ranking_musica[i]["genere"]
+                    nome_pulito = genere_completo.replace("Musica: ", "")
+                    st.markdown(f"### {i+1}. {nome_pulito}")
+                    
+                    brani_consigliati = ottieni_item_per_genere("catalogo_musica", genere_completo, "popolarita")
+                    if brani_consigliati:
+                        for brano in brani_consigliati:
+                            if "titolo" in brano and "artista" in brano:
+                                st.info(f"**{brano['titolo']}**\n(Di: {brano['artista']})")
+                    else:
+                        st.warning("Nessun brano trovato.")
 
 if __name__ == "__main__":
     main()
