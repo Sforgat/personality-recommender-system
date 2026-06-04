@@ -46,8 +46,9 @@ def main():
     
     DOMANDE_PER_PAGINA = 3
     total_pagine = math.ceil(total_domande / DOMANDE_PER_PAGINA)
-    opzioni = ["1", "2", "3", "4", "5"]
-
+    # opzioni = ["1", "2", "3", "4", "5"]
+    opzioni = ["5", "4", "3", "2", "1"]
+    
     # FASE 1: ONBOARDING
     if st.session_state.current_page == "onboarding":
         _, col_central, _ = st.columns([1, 2, 1])
