@@ -54,7 +54,7 @@ def indicizza_film():
             "_source": {
                 "titolo": row['Movie Name'],
                 "regista": row['Director'],
-                "genere_motore": genere_formattato, # Quello che cercherà Streamlit
+                "genere_motore": genere_formattato, 
                 "rating": float(row['IMDb Rating']) if pd.notna(row['IMDb Rating']) else 0.0,
             }
         }
@@ -158,7 +158,7 @@ def indicizza_libri():
                 "titolo": row['Title'],
                 "prezzo": str(row.get('Price')),
                 "genere_motore": genere_formattato,
-                "rating": voto_numerico  # Ora è un VERO numero!
+                "rating": voto_numerico  
             }
         }
         azioni.append(doc)

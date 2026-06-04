@@ -1,7 +1,7 @@
 # logic/recommender.py
 import math
 from data.stereotipi import STEREOTIPI_GENERI
-from regole_domini import calcola_regole_film, calcola_regole_musica, calcola_regole_libri
+from logic.regole_domini import calcola_regole_film, calcola_regole_libri, calcola_regole_musica
 
 def normalizza_profilo(profilo_grezzo, num_domande_per_tratto=4):
     profilo_norm = {}

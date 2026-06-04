@@ -7,6 +7,7 @@ import altair as alt
 from logic.calcolo_ocean import calcola_punteggi
 from logic.recommender import genera_raccomandazioni
 from logic.database import ottieni_item_per_genere
+from logic.regole_domini import calcola_regole_film, calcola_regole_libri, calcola_regole_musica
 
 # 1. Configurazione globale della pagina
 st.set_page_config(page_title="Personality Recommender", page_icon="🧠", layout="wide")
