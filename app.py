@@ -87,7 +87,7 @@ def main():
                 border-left: none !important;
             }
             .question-text {
-                font-size: 21px !important;
+                font-size: 17px !important;
                 font-weight: 600 !important;
                 color: #ffffff !important;
                 line-height: 1.4;
@@ -231,16 +231,6 @@ def main():
         # Contenitore centrale impostato a 3.0 per mantenere la griglia centrata
         _, col_central, _ = st.columns([0.5, 3.0, 0.5])
         with col_central:
-            st.info("Modalità Sviluppatore attiva")
-            if st.button("Compila tutto a caso", use_container_width=True):
-                st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
-                st.session_state.dev_mode = True
-                for domanda in domande:
-                    st.session_state.risposte_utente[domanda['id']] = random.choice(opzioni)
-                st.session_state.current_page = "results"
-                st.rerun()
-            st.divider()
-
             st.title("Scopri il tuo Profilo Psicologico")
             quiz_page_idx = st.session_state.quiz_step - 1
             
@@ -296,6 +286,16 @@ def main():
                     else:
                         st.session_state.current_page = "results"
                     st.rerun()
+
+            st.divider()
+            st.info("Modalità Sviluppatore attiva")
+            if st.button("Compila tutto a caso", use_container_width=True):
+                st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
+                st.session_state.dev_mode = True
+                for domanda in domande:
+                    st.session_state.risposte_utente[domanda['id']] = random.choice(opzioni)
+                st.session_state.current_page = "results"
+                st.rerun()
 
     # FASE 3: SCHERMATA RISULTATI
     elif st.session_state.current_page == "results":
@@ -367,7 +367,6 @@ def main():
         
         # 3. Popoliamo la scheda Libri (DYNAMIC FILTERING + COLONNE)
         with tab_libri:
-            st.write("I 3 generi letterari perfetti per te:")
             cols_libri = st.columns(3) # Dichiariamo le 3 colonne orizzontali
             generi_mostrati = 0
             
@@ -398,7 +397,6 @@ def main():
                 
         # 4. Popoliamo la scheda Film (DYNAMIC FILTERING + COLONNE)
         with tab_film:
-            st.write("I 3 generi cinematografici perfetti per te:")
             cols_film = st.columns(3)
             generi_mostrati = 0 
             
@@ -426,7 +424,6 @@ def main():
                 
         # 5. Popoliamo la scheda Musica (DYNAMIC FILTERING + COLONNE)
         with tab_musica:
-            st.write("I 3 generi musicali perfetti per te:")
             cols_musica = st.columns(3)
             generi_mostrati = 0
             
@@ -469,7 +466,6 @@ def main():
 
         if st.session_state.get("dev_mode", False):
             st.write("")
-            st.markdown("### [DEV MODE] Diagnostica Motore Raccomandazioni")
             match = motore_raccomandazione.get("match_esatti", [])
             if len(match) > 0:
                 st.success("Affinità assolute (100% Match) individuate dal sistema:")

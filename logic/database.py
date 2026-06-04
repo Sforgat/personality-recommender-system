@@ -9,30 +9,21 @@ except Exception as e:
     print(f"Errore di connessione a Elasticsearch: {e}")
 
 def ottieni_item_per_genere(indice, genere_richiesto, campo_ordinamento, limite=3):
-    # 1. DIZIONARIO DI TRADUZIONE (Con prefisso, a prova di collisione!)
+    # 2. DIZIONARIO DI TRADUZIONE (Solo sinonimi esatti)
     mappa_traduzioni = {
         # ==================== FILM ====================
         "Film: Neo-Noir": "Film-Noir", 
-        "Film: Foreign": "Drama",       
-        "Film: Cartoon": "Animation",
         "Film: Science Fiction": "Sci-Fi", 
-        "Film: Parody": "Comedy",
-        "Film: Tragedy": "Drama",
         
         # ==================== LIBRI ====================
         "Libri: Comic": "Comics",
-        "Libri: Educational": "Non-Fiction",
-        "Libri: Non Fiction": "Non-Fiction", 
-        "Libri: Humor": "Humor and ComedyHumor and Comedy", 
-        "Libri: War": "History", # Solo per i libri 'War' diventa 'History'!
         "Libri: Scary": "Horror",
+        "Libri: Humor": "Humor and ComedyHumor and Comedy", # Manteniamo la patch per il bug del dataset
         
         # ==================== MUSICA ====================
         "Musica: Classic": "classical", 
-        "Musica: Rap": "hip-hop",
         "Musica: Hip Hop": "hip-hop",
-        "Musica: R&B": "r-n-b",            
-        "Musica: Oldies": "rock-n-roll"    
+        "Musica: R&B": "r-n-b"    
     }
     
     # 2. TRADUZIONE IMMEDIATA
