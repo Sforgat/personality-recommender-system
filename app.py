@@ -48,7 +48,7 @@ def main():
     total_pagine = math.ceil(total_domande / DOMANDE_PER_PAGINA)
     opzioni = ["1", "2", "3", "4", "5"]
 
-    # FASE 1: ONBOARDING (Protetto dal CSS del Quiz)
+    # FASE 1: ONBOARDING
     if st.session_state.current_page == "onboarding":
         _, col_central, _ = st.columns([1, 2, 1])
         with col_central:
@@ -71,111 +71,164 @@ def main():
                 st.session_state.quiz_step = 1
                 st.rerun()
 
-    # FASE 2: QUIZ A BLOCCHI (Il CSS si attiva solo ed esclusivamente qui)
+    # FASE 2: QUIZ A BLOCCHI
     elif st.session_state.current_page == "quiz":
-        # Iniettiamo il CSS solo in questa schermata per preservare l'Onboarding
         st.markdown("""
             <style>
-            /* Card protetta per le domande */
+            /* --- DOMANDA TRASPARENTE CON TESTO BIANCO --- */
             .question-box {
-                background-color: #ffffff;
-                padding: 25px;
-                border-radius: 12px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-                margin-top: 25px;
-                margin-bottom: 15px;
-                border-left: 5px solid #4A90E2;
+                background-color: transparent !important;
+                padding: 10px 0px !important;
+                border-radius: 0px !important;
+                box-shadow: none !important;
+                margin-top: 25px !important;
+                margin-bottom: 5px !important;
+                border-left: none !important;
             }
             .question-text {
-                font-size: 18px;
-                font-weight: 600;
-                color: #1E293B;
+                font-size: 21px !important;
+                font-weight: 600 !important;
+                color: #ffffff !important;
                 line-height: 1.4;
             }
             
-            /* --- AZZERAMENTO E CENTRATURA DEL GRUPPO RADIO --- */
-            div[data-testid="stRadioHorizontal"] {
+            /* --- CONTROLLO STRUTTURALE GRUPPO QUIZ A 5 BOTTONI --- */
+            div[data-testid="stRadioHorizontal"]:has(label:nth-of-type(5)) {
                 display: flex !important;
                 justify-content: center !important;
                 align-items: center !important;
                 width: 100% !important;
             }
-            div[role="radiogroup"] {
+            div[data-testid="stRadioHorizontal"]:has(label:nth-of-type(5)) > label {
+                display: none !important; 
+            }
+            
+            /* --- CONTENITORE CENTRATO E SIMMETRICO --- */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 24px !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                height: 65px !important;
+            }
+            
+            /* Iniezione dinamica del testo "In disaccordo" a sinistra (Inversione) */
+            div[role="radiogroup"]:has(label:nth-of-type(5))::before {
+                content: "In disaccordo" !important;
+                color: #8B5CF6 !important;
+                font-weight: 600 !important;
+                font-size: 16px !important;
+                white-space: nowrap !important;
+                order: 0 !important;
+            }
+            
+            /* Iniezione dinamica del testo "D'accordo" a destra (Inversione) */
+            div[role="radiogroup"]:has(label:nth-of-type(5))::after {
+                content: "D'accordo" !important;
+                color: #10B981 !important;
+                font-weight: 600 !important;
+                font-size: 16px !important;
+                white-space: nowrap !important;
+                order: 6 !important;
+            }
+            
+            /* ORDINAMENTO VISIVO INVERTITO: da Disaccordo (5) ad Accordo (1) */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(1) { order: 5 !important; } /* Verde Grande a destra */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(2) { order: 4 !important; } /* Verde Medio */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(3) { order: 3 !important; } /* Grigio Neutro al centro */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(4) { order: 2 !important; } /* Viola Medio */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(5) { order: 1 !important; } /* Viola Grande a sinistra */
+            
+            /* Box contenitori di ciascun cerchio */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 55px !important;
+                height: 55px !important;
                 display: flex !important;
                 justify-content: center !important;
                 align-items: center !important;
-                gap: 35px !important;
-                width: auto !important;
+                background-color: transparent !important;
+                flex-shrink: 0 !important;
             }
             
-            /* Nasconde completamente i numeri nativi 1, 2, 3, 4, 5 */
-            div[role="radiogroup"] label [data-testid="stMarkdownContainer"] {
+            /* Reset etichette di testo native di Streamlit */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label [data-testid="stMarkdownContainer"] {
+                display: none !important;
+            }
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label > div:first-of-type div {
                 display: none !important;
             }
             
-            /* Disattiva il pallino rosso interno predefinito di Streamlit */
-            div[role="radiogroup"] label > div:first-of-type div {
-                display: none !important;
-            }
-            
-            /* Proprietà comuni a tutti i cerchi personalizzati */
-            div[role="radiogroup"] label > div:first-of-type {
-                border-width: 2px !important;
+            /* Stile base comune dei cerchi */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label > div:first-of-type {
+                border-width: 3px !important;
                 border-style: solid !important;
                 background-color: transparent !important;
-                transition: transform 0.2s ease, background-color 0.2s ease !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+                transition: background-color 0.2s ease, border-color 0.2s ease !important;
             }
             
-            /* --- CONFIGURAZIONE SINGOLI BOTTONI (SCALA E COLORI) --- */
-            
-            /* BOTTONE 1: Massimo Accordo (Verde Acceso - Grande) */
-            div[role="radiogroup"] label:nth-of-type(1) > div:first-of-type {
-                transform: scale(2.2) !important;
+            /* --- DIMENSIONAMENTO DEI CERCHI --- */
+            /* Opzione 1: Massimo Accordo (Verde Grande) */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(1) > div:first-of-type {
+                width: 48px !important;
+                height: 48px !important;
                 border-color: #10B981 !important;
             }
-            div[role="radiogroup"] label:nth-of-type(1) input:checked + div {
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(1):has(input:checked) > div:first-of-type {
                 background-color: #10B981 !important;
             }
             
-            /* BOTTONE 2: Accordo Parziale (Verde Pastello - Medio Grande) */
-            div[role="radiogroup"] label:nth-of-type(2) > div:first-of-type {
-                transform: scale(1.6) !important;
+            /* Opzione 2: Accordo Parziale (Verde Medio) */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(2) > div:first-of-type {
+                width: 36px !important;
+                height: 36px !important;
                 border-color: #86EFAC !important;
             }
-            div[role="radiogroup"] label:nth-of-type(2) input:checked + div {
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(2):has(input:checked) > div:first-of-type {
                 background-color: #86EFAC !important;
             }
             
-            /* BOTTONE 3: Neutro (Grigio - Piccolo) */
-            div[role="radiogroup"] label:nth-of-type(3) > div:first-of-type {
-                transform: scale(1.1) !important;
+            /* Opzione 3: Neutro (Grigio Piccolo) */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(3) > div:first-of-type {
+                width: 24px !important;
+                height: 24px !important;
                 border-color: #94A3B8 !important;
             }
-            div[role="radiogroup"] label:nth-of-type(3) input:checked + div {
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(3):has(input:checked) > div:first-of-type {
                 background-color: #94A3B8 !important;
             }
             
-            /* BOTTONE 4: Disaccordo Parziale (Viola Pastello - Medio Grande) */
-            div[role="radiogroup"] label:nth-of-type(4) > div:first-of-type {
-                transform: scale(1.6) !important;
+            /* Opzione 4: Disaccordo Parziale (Viola Medio) */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(4) > div:first-of-type {
+                width: 36px !important;
+                height: 36px !important;
                 border-color: #C084FC !important;
             }
-            div[role="radiogroup"] label:nth-of-type(4) input:checked + div {
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(4):has(input:checked) > div:first-of-type {
                 background-color: #C084FC !important;
             }
             
-            /* BOTTONE 5: Massimo Disaccordo (Viola Acceso - Grande) */
-            div[role="radiogroup"] label:nth-of-type(5) > div:first-of-type {
-                transform: scale(2.2) !important;
+            /* Opzione 5: Massimo Disaccordo (Viola Grande) */
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(5) > div:first-of-type {
+                width: 48px !important;
+                height: 48px !important;
                 border-color: #8B5CF6 !important;
             }
-            div[role="radiogroup"] label:nth-of-type(5) input:checked + div {
+            div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(5):has(input:checked) > div:first-of-type {
                 background-color: #8B5CF6 !important;
             }
             </style>
         """, unsafe_allow_html=True)
 
-        _, col_central, _ = st.columns([1, 2, 1])
+        # Contenitore centrale impostato a 3.0 per mantenere la griglia centrata
+        _, col_central, _ = st.columns([0.5, 3.0, 0.5])
         with col_central:
             st.info("Modalità Sviluppatore attiva")
             if st.button("Compila tutto a caso", use_container_width=True):
@@ -209,20 +262,15 @@ def main():
                 risposta_precedente = st.session_state.risposte_utente.get(domanda['id'], None)
                 default_idx = opzioni.index(risposta_precedente) if risposta_precedente in opzioni else 2
                 
-                col_lbl1, col_radio, col_lbl2 = st.columns([2, 6, 2], vertical_alignment="center")
-                with col_lbl1:
-                    st.markdown("<p style='color:#10B981; font-weight:600; text-align:right; margin:0; font-size:16px; white-space:nowrap;'>D'accordo</p>", unsafe_allow_html=True)
-                with col_radio:
-                    st.session_state.risposte_utente[domanda['id']] = st.radio(
-                        f"Scelta per {domanda['id']}",
-                        options=opzioni,
-                        index=default_idx,
-                        key=f"radio_{domanda['id']}",
-                        horizontal=True,
-                        label_visibility="collapsed"
-                    )
-                with col_lbl2:
-                    st.markdown("<p style='color:#8B5CF6; font-weight:600; text-align:left; margin:0; font-size:16px; white-space:nowrap;'>In disaccordo</p>", unsafe_allow_html=True)
+                # I bottoni mantengono la logica nativa (1=Accordo, 5=Disaccordo), ma sono invertiti visivamente dal CSS
+                st.session_state.risposte_utente[domanda['id']] = st.radio(
+                    f"Scelta per {domanda['id']}",
+                    options=opzioni,
+                    index=default_idx,
+                    key=f"radio_{domanda['id']}",
+                    horizontal=True,
+                    label_visibility="collapsed"
+                )
                 st.write("") 
                 
             st.markdown("---")
@@ -299,7 +347,7 @@ def main():
 
     # FASE 4: SCHERMATA RACCOMANDAZIONI
     elif st.session_state.current_page == "recommendations":
-        st.title("Le Tue Raccomandazioni")
+        st.title("🎯 Le Tue Raccomandazioni")
         st.write("In base al tuo profilo psicologico calcolato, ecco i contenuti ideali suddivisi per genere affine:")
         
         mappa_genere = {"Preferisco non specificare": "all", "Uomo": "male", "Donna": "female"}
@@ -313,7 +361,7 @@ def main():
         ranking_film = [r for r in ranking if r["genere"].startswith("Film:")]
         ranking_musica = [r for r in ranking if r["genere"].startswith("Musica:")]
         
-        tab_libri, tab_film, tab_musica = st.tabs(["Libri", "Film", "Musica"])
+        tab_libri, tab_film, tab_musica = st.tabs(["📚 Libri", "🎬 Film", "🎵 Musica"])
         
         with tab_libri:
             cols_libri = st.columns(3)
@@ -378,17 +426,6 @@ def main():
                 st.session_state.scelta_genere = "Preferisco non specificare"
                 st.session_state.dev_mode = False
                 st.rerun()
-                
-        if st.session_state.get("dev_mode", False):
-            st.write("")
-            st.markdown("### [DEV MODE] Diagnostica Motore Raccomandazioni")
-            match = motore_raccomandazione.get("match_esatti", [])
-            if len(match) > 0:
-                st.success("Affinità assolute (100% Match) individuate dal sistema:")
-                for item in match:
-                    st.write(f"- **{item}**")
-            else:
-                st.info("Nessun match esatto al 100% generato con i dati attuali.")
 
 if __name__ == "__main__":
     main()
