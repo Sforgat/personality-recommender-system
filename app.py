@@ -8,8 +8,8 @@ from logic.calcolo_ocean import calcola_punteggi
 from logic.recommender import genera_raccomandazioni
 from logic.database import ottieni_item_per_genere
 
-# 1. Configurazione della pagina
-st.set_page_config(page_title="Personality Recommender", page_icon="🧠", layout="centered")
+# 1. Configurazione della pagina (Globale su wide per permettere lo schermo intero dopo)
+st.set_page_config(page_title="Personality Recommender", page_icon="🧠", layout="wide")
 
 # Custom CSS per le card delle domande
 st.markdown("""
@@ -76,100 +76,100 @@ def main():
         "4 - Moderatamente preciso",
         "5 - Molto preciso"
     ]
-    
-    # === AREA DI DEBUG ===
-    if st.session_state.current_page <= total_pagine:
-        st.info("Modalità Sviluppatore attiva")
-        if st.button("Compila tutto a caso", use_container_width=True):
-            st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
-            st.session_state.dev_mode = True
-            for domanda in domande:
-                st.session_state.risposte_utente[domanda['id']] = random.choice(opzioni)
-            st.session_state.current_page = total_pagine + 1
-            st.rerun()
-        st.divider()
 
     # 3. --- FLUSSO DEL QUESTIONARIO ---
     
-    # FASE A: Onboarding Genere (Pagina 0)
+    # FASE A: Onboarding Genere (Pagina 0) -> SIMULAZIONE LAYOUT CENTRATO
     if st.session_state.current_page == 0:
-        st.title("Scopri il tuo Profilo Psicologico")
-        st.write("Compila il seguente test per permetterci di raccomandarti i migliori film, libri e programmi TV basati sulla tua vera personalità.")
-        st.subheader("Prima di iniziare:")
-        opzioni_genere = ["Preferisco non specificare", "Uomo", "Donna"]
-        def_genere_idx = opzioni_genere.index(st.session_state.scelta_genere)
-        
-        st.session_state.scelta_genere = st.radio(
-            "Identità di genere:",
-            options=opzioni_genere,
-            index=def_genere_idx,
-            horizontal=True
-        )
-        st.write("")
-        
-        if st.button("Inizia il Test", type="primary", use_container_width=True):
-            st.session_state.current_page = 1
-            st.rerun()
-
-    # FASE B: Quiz a blocchi (Pagine da 1 a N)
-    elif st.session_state.current_page <= total_pagine:
-        st.title("Scopri il tuo Profilo Psicologico")
-        quiz_page = st.session_state.current_page - 1
-        
-        start_idx = quiz_page * DOMANDE_PER_PAGINA
-        end_idx = min(start_idx + DOMANDE_PER_PAGINA, total_domande)
-        domande_pagina = domande[start_idx:end_idx]
-        
-        st.progress(quiz_page / total_pagine)
-        st.write(f"**Pagina {quiz_page + 1} di {total_pagine}** (Domande {start_idx + 1} - {end_idx})")
-        
-        for i, domanda in enumerate(domande_pagina):
-            global_idx = start_idx + i + 1
+        _, col_central, _ = st.columns([1, 2, 1])
+        with col_central:
+            st.title("Scopri il tuo Profilo Psicologico")
+            st.write("Compila il seguente test per permetterci di raccomandarti i migliori film, libri e programmi TV basati sulla tua vera personalità.")
+            st.subheader("Prima di iniziare:")
+            opzioni_genere = ["Preferisco non specificare", "Uomo", "Donna"]
+            def_genere_idx = opzioni_genere.index(st.session_state.scelta_genere)
             
-            st.markdown(f"""
-                <div class="question-box">
-                    <div class="question-text">{global_idx}. {domanda['text']}</div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            risposta_precedente = st.session_state.risposte_utente.get(domanda['id'], None)
-            default_idx = opzioni.index(risposta_precedente) if risposta_precedente in opzioni else 2
-            
-            st.session_state.risposte_utente[domanda['id']] = st.radio(
-                f"Scelta per {domanda['id']}",
-                options=opzioni,
-                index=default_idx,
-                key=f"radio_{domanda['id']}",
-                horizontal=True,
-                label_visibility="collapsed"
+            st.session_state.scelta_genere = st.radio(
+                "Identità di genere:",
+                options=opzioni_genere,
+                index=def_genere_idx,
+                horizontal=True
             )
-            st.write("") 
+            st.write("")
             
-        st.markdown("---")
-        
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("Indietro", use_container_width=True):
-                st.session_state.current_page -= 1
-                st.rerun()
-                    
-        with col2:
-            is_last_page = (quiz_page == total_pagine - 1)
-            label_bottone = "Calcola Personalità" if is_last_page else "Avanti"
-            tipo_bottone = "primary" if is_last_page else "secondary"
-            
-            if st.button(label_bottone, type=tipo_bottone, use_container_width=True):
-                st.session_state.current_page += 1
+            if st.button("Inizia il Test", type="primary", use_container_width=True):
+                st.session_state.current_page = 1
                 st.rerun()
 
-    # FASE C: Schermata dei Risultati Big Five (Pagina N + 1)
+    # FASE B: Quiz a blocchi (Pagine da 1 a N) -> SIMULAZIONE LAYOUT CENTRATO
+    elif st.session_state.current_page <= total_pagine:
+        _, col_central, _ = st.columns([1, 2, 1])
+        with col_central:
+            # === AREA DI DEBUG (Racchiusa dentro la colonna centrale per non sformare il layout) ===
+            st.info("Modalità Sviluppatore attiva")
+            if st.button("Compila tutto a caso", use_container_width=True):
+                st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
+                st.session_state.dev_mode = True
+                for domanda in domande:
+                    st.session_state.risposte_utente[domanda['id']] = random.choice(opzioni)
+                st.session_state.current_page = total_pagine + 1
+                st.rerun()
+            st.divider()
+
+            st.title("Scopri il tuo Profilo Psicologico")
+            quiz_page = st.session_state.current_page - 1
+            
+            start_idx = quiz_page * DOMANDE_PER_PAGINA
+            end_idx = min(start_idx + DOMANDE_PER_PAGINA, total_domande)
+            domande_pagina = domande[start_idx:end_idx]
+            
+            st.progress(quiz_page / total_pagine)
+            st.write(f"**Pagina {quiz_page + 1} di {total_pagine}** (Domande {start_idx + 1} - {end_idx})")
+            
+            for i, domanda in enumerate(domande_pagina):
+                global_idx = start_idx + i + 1
+                
+                st.markdown(f"""
+                    <div class="question-box">
+                        <div class="question-text">{global_idx}. {domanda['text']}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                risposta_precedente = st.session_state.risposte_utente.get(domanda['id'], None)
+                default_idx = opzioni.index(risposta_precedente) if risposta_precedente in opzioni else 2
+                
+                st.session_state.risposte_utente[domanda['id']] = st.radio(
+                    f"Scelta per {domanda['id']}",
+                    options=opzioni,
+                    index=default_idx,
+                    key=f"radio_{domanda['id']}",
+                    horizontal=True,
+                    label_visibility="collapsed"
+                )
+                st.write("") 
+                
+            st.markdown("---")
+            
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("Indietro", use_container_width=True):
+                    st.session_state.current_page -= 1
+                    st.rerun()
+                        
+            with col2:
+                is_last_page = (quiz_page == total_pagine - 1)
+                label_bottone = "Calcola Personalità" if is_last_page else "Avanti"
+                tipo_bottone = "primary" if is_last_page else "secondary"
+                
+                if st.button(label_bottone, type=tipo_bottone, use_container_width=True):
+                    st.session_state.current_page += 1
+                    st.rerun()
+
+    # FASE C: Schermata dei Risultati Big Five (Pagina N + 1) -> USA TUTTO LO SCHERMO (WIDE)
     elif st.session_state.current_page == total_pagine + 1:
         st.title("I Tuoi Risultati")
         
-        # Calcolo dei punteggi
         risultati_ocean = calcola_punteggi(st.session_state.risposte_utente, domande)
-        
-        # Individuazione del tratto maggiore per l'evidenziazione grafica
         tratto_maggiore = max(risultati_ocean, key=risultati_ocean.get)
         
         st.subheader("Il tuo profilo psicologico completo:")
@@ -181,28 +181,25 @@ def main():
         col5.metric("Nevrotic. (N)", risultati_ocean['N'])
         st.write("")
 
-        # Convertiamo i dati in un DataFrame Pandas per Altair
         dati_grafico = pd.DataFrame([
             {"Tratto": NOMI_OCEAN[k], "Punteggio": v, "Sigla": k}
             for k, v in risultati_ocean.items()
         ])
         
-        # Creazione del grafico con alt.condition (minuscolo!)
         istogramma_personalizzato = alt.Chart(dati_grafico).mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
             x=alt.X("Tratto:N", axis=alt.Axis(labelAngle=0), title="Tratti di Personalità", sort=None),
             y=alt.Y("Punteggio:Q", title="Punteggio ottenuto"),
-            color=alt.condition(  # <--- Corretto qui!
+            color=alt.condition(
                 alt.datum.Sigla == tratto_maggiore,
-                alt.value("#10B981"),  # Verde Smeraldo per il tratto dominante
-                alt.value("#4A90E2")   # Blu per tutti gli altri tratti
+                alt.value("#10B981"),  
+                alt.value("#4A90E2")   
             ),
             tooltip=["Tratto", "Punteggio"]
-        ).properties(height=350)
+        ).properties(height=400) 
         
         st.altair_chart(istogramma_personalizzato, use_container_width=True)
         st.divider()
 
-        # PULSANTI DI NAVIGAZIONE
         col_actions1, col_actions2 = st.columns([1, 1])
         with col_actions1:
             if st.button("Ripeti il Test", use_container_width=True):
@@ -217,24 +214,9 @@ def main():
                 st.session_state.current_page = total_pagine + 2
                 st.rerun()
 
-    # FASE D: Schermata Separata per le Raccomandazioni (Pagina N + 2)
+    # FASE D: Schermata Separata per le Raccomandazioni (Pagina N + 2) -> USA TUTTO LO SCHERMO (WIDE)
     else:
-        st.title("Le Tue Raccomandazioni")
-        
-        col_back1, col_back2 = st.columns([1, 1])
-        with col_back1:
-            if st.button("Torna ai tuoi Punteggi", use_container_width=True):
-                st.session_state.current_page = total_pagine + 1
-                st.rerun()
-        with col_back2:
-            if st.button("Ripeti il Test", key="btn_reset_final", use_container_width=True):
-                st.session_state.current_page = 0
-                st.session_state.risposte_utente = {}
-                st.session_state.scelta_genere = "Preferisco non specificare"
-                st.session_state.dev_mode = False
-                st.rerun()
-        
-        st.divider()
+        st.title("🎯 Le Tue Raccomandazioni")
         st.write("In base al tuo profilo psicologico calcolato, ecco i contenuti ideali suddivisi per genere affine:")
         
         mappa_genere = {"Preferisco non specificare": "all", "Uomo": "male", "Donna": "female"}
@@ -243,14 +225,6 @@ def main():
         
         motore_raccomandazione = genera_raccomandazioni(risultati_ocean, genere_chiave)
         
-        if st.session_state.get("dev_mode", False):
-            match = motore_raccomandazione["match_esatti"]
-            if len(match) > 0:
-                st.success("DEV MODE] Abbiamo trovato delle affinità assolute:")
-                for item in match:
-                    st.write(f"- **{item}**")
-            st.write("")
-            
         ranking = motore_raccomandazione["ranking_completo"]
         ranking_libri = [r for r in ranking if r["genere"].startswith("Libri:")]
         ranking_film = [r for r in ranking if r["genere"].startswith("Film:")]
@@ -306,6 +280,29 @@ def main():
                                 st.info(f"**{brano['titolo']}**\n(Di: {brano['artista']})")
                     else:
                         st.warning("Nessun brano trovato.")
+
+        st.divider()
+        
+        col_back1, col_back2 = st.columns([1, 1])
+        with col_back1:
+            if st.button("Torna ai tuoi Punteggi", use_container_width=True):
+                st.session_state.current_page = total_pagine + 1
+                st.rerun()
+        with col_back2:
+            if st.button("Ripeti il Test", key="btn_reset_final", use_container_width=True):
+                st.session_state.current_page = 0
+                st.session_state.risposte_utente = {}
+                st.session_state.scelta_genere = "Preferisco non specificare"
+                st.session_state.dev_mode = False
+                st.rerun()
+                
+        if st.session_state.get("dev_mode", False):
+            st.write("")
+            match = motore_raccomandazione["match_esatti"]
+            if len(match) > 0:
+                st.success("[DEV MODE] Abbiamo trovato delle affinità assolute:")
+                for item in match:
+                    st.write(f"- **{item}**")
 
 if __name__ == "__main__":
     main()
