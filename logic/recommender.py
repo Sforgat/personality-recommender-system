@@ -55,14 +55,31 @@ def approccio_rule_based(profilo_norm, genere_utente):
 
 
 def genera_raccomandazioni(profilo_grezzo, genere_selezionato="all"):
+    # Normalizziamo il profilo in ingresso
     profilo_norm = normalizza_profilo(profilo_grezzo)
+    
+    # 1. Otteniamo i calcoli separati dai due approcci
+    match_apriori = approccio_rule_based(profilo_norm, genere_selezionato)
     ranking_euclideo = approccio_euclideo(profilo_norm, genere_selezionato)
     
-    # ECCO LA RIGA MODIFICATA DA AGGIORNARE:
-    match_apriori = approccio_rule_based(profilo_norm, genere_selezionato)
+    # 2. Inizializziamo le strutture per la fusione (Boosting)
+    ranking_completo = []
+    generi_inseriti = set() # Usiamo un set per una ricerca super veloce dei duplicati
     
+    # 3. Priorità Assoluta: inseriamo prima i match Rule-Based
+    for match in match_apriori:
+        ranking_completo.append({"genere": match, "distanza": 0.0})
+        generi_inseriti.add(match)
+        
+    # 4. Fallback: accodiamo i risultati Euclidei, saltando quelli già presenti
+    for item in ranking_euclideo:
+        if item["genere"] not in generi_inseriti:
+            ranking_completo.append(item)
+            generi_inseriti.add(item["genere"])
+            
+    # 5. Ritorno dei dati aggiornati
     return {
         "profilo_normalizzato": profilo_norm,
-        "ranking_completo": ranking_euclideo,
+        "ranking_completo": ranking_completo, # Ora contiene la lista fusa e ordinata!
         "match_esatti": match_apriori
     }

@@ -47,8 +47,8 @@ def main():
     DOMANDE_PER_PAGINA = 3
     total_pagine = math.ceil(total_domande / DOMANDE_PER_PAGINA)
     # opzioni = ["1", "2", "3", "4", "5"]
-    opzioni = ["5", "4", "3", "2", "1"]
-    
+    opzioni = ["5", "4", "3", "2", "1"] # cambiato ordine perchè in CSS si fa inversione
+
     # FASE 1: ONBOARDING
     if st.session_state.current_page == "onboarding":
         _, col_central, _ = st.columns([1, 2, 1])
@@ -136,7 +136,7 @@ def main():
                 order: 6 !important;
             }
             
-            /* ORDINAMENTO VISIVO INVERTITO: da Disaccordo (5) ad Accordo (1) */
+            /* ORDINAMENTO VISIVO INVERTITO: da Accordo (5) ad Disaccordo (1) */
             div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(1) { order: 5 !important; } /* Verde Grande a destra */
             div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(2) { order: 4 !important; } /* Verde Medio */
             div[role="radiogroup"]:has(label:nth-of-type(5)) label:nth-of-type(3) { order: 3 !important; } /* Grigio Neutro al centro */
@@ -263,7 +263,7 @@ def main():
                 risposta_precedente = st.session_state.risposte_utente.get(domanda['id'], None)
                 default_idx = opzioni.index(risposta_precedente) if risposta_precedente in opzioni else 2
                 
-                # I bottoni mantengono la logica nativa (1=Accordo, 5=Disaccordo), ma sono invertiti visivamente dal CSS
+                # I bottoni mantengono la logica nativa (1=Disaccordo, 5=Accordo), ma sono invertiti visivamente dal CSS
                 st.session_state.risposte_utente[domanda['id']] = st.radio(
                     f"Scelta per {domanda['id']}",
                     options=opzioni,
@@ -362,56 +362,95 @@ def main():
         ranking_film = [r for r in ranking if r["genere"].startswith("Film:")]
         ranking_musica = [r for r in ranking if r["genere"].startswith("Musica:")]
         
-        tab_libri, tab_film, tab_musica = st.tabs(["Libri", "Film", "Musica"])
+        # 2. Creiamo le schede (Tabs) interattive di Streamlit
+        tab_libri, tab_film, tab_musica = st.tabs(["📚 Libri", "🎬 Film", "🎵 Musica"])
         
+        # 3. Popoliamo la scheda Libri (DYNAMIC FILTERING + COLONNE)
         with tab_libri:
-            cols_libri = st.columns(3)
-            for i in range(min(3, len(ranking_libri))):
-                with cols_libri[i]:
-                    genere_completo = ranking_libri[i]["genere"]
-                    nome_pulito = genere_completo.replace("Libri: ", "")
-                    st.markdown(f"### {i+1}. {nome_pulito}")
+            st.write("I 3 generi letterari perfetti per te:")
+            cols_libri = st.columns(3) # Dichiariamo le 3 colonne orizzontali
+            generi_mostrati = 0
+            
+            for item in ranking_libri:
+                if generi_mostrati >= 3:
+                    break 
                     
-                    libri_consigliati = ottieni_item_per_genere("catalogo_libri", genere_completo, "rating")
-                    if libri_consigliati:
+                genere_completo = item["genere"]
+                nome_pulito = genere_completo.replace("Libri: ", "")
+                distanza = item["distanza"]
+                
+                libri_consigliati = ottieni_item_per_genere("catalogo_libri", genere_completo, "rating")
+                
+                if libri_consigliati:
+                    # Inseriamo il contenuto dinamicamente nella colonna corrispondente (0, 1, o 2)
+                    with cols_libri[generi_mostrati]: 
+                        st.markdown(f"### {generi_mostrati+1}. {nome_pulito}")
+                        st.markdown(f"*(Distanza: {distanza:.2f})*")
                         for libro in libri_consigliati:
                             if "titolo" in libro:
+                                prezzo = libro.get('prezzo', 'N/D')
                                 rating = libro.get('rating', 'N/D')
-                                st.info(f"**{libro['titolo']}**\n(Rating: {rating})")
-                    else:
-                        st.warning("Nessun libro trovato.")
-                        
-        with tab_film:
-            cols_film = st.columns(3)
-            for i in range(min(3, len(ranking_film))):
-                with cols_film[i]:
-                    genere_completo = ranking_film[i]["genere"]
-                    nome_pulito = genere_completo.replace("Film: ", "")
-                    st.markdown(f"### {i+1}. {nome_pulito}")
+                                st.info(f"**{libro['titolo']}**\n\n(Rating: {rating})")
+                    generi_mostrati += 1 
                     
-                    film_consigliati = ottieni_item_per_genere("catalogo_film", genere_completo, "rating")
-                    if film_consigliati:
+            if generi_mostrati == 0:
+                st.warning("Nessun libro trovato per il tuo profilo.")
+                
+        # 4. Popoliamo la scheda Film (DYNAMIC FILTERING + COLONNE)
+        with tab_film:
+            st.write("I 3 generi cinematografici perfetti per te:")
+            cols_film = st.columns(3)
+            generi_mostrati = 0 
+            
+            for item in ranking_film:
+                if generi_mostrati >= 3:
+                    break 
+                    
+                genere_completo = item["genere"]
+                nome_pulito = genere_completo.replace("Film: ", "")
+                distanza = item["distanza"]
+                
+                film_consigliati = ottieni_item_per_genere("catalogo_film", genere_completo, "rating")
+                
+                if film_consigliati:
+                    with cols_film[generi_mostrati]:
+                        st.markdown(f"### {generi_mostrati+1}. {nome_pulito}")
+                        st.markdown(f"*(Distanza: {distanza:.2f})*")
                         for film in film_consigliati:
                             if "titolo" in film and "regista" in film:
-                                st.info(f"**{film['titolo']}**\n(Regia: {film['regista']} - Voto: {film['rating']})")
-                    else:
-                        st.warning("Nessun film trovato.")
-                        
-        with tab_musica:
-            cols_musica = st.columns(3)
-            for i in range(min(3, len(ranking_musica))):
-                with cols_musica[i]:
-                    genere_completo = ranking_musica[i]["genere"]
-                    nome_pulito = genere_completo.replace("Musica: ", "")
-                    st.markdown(f"### {i+1}. {nome_pulito}")
+                                st.info(f"**{film['titolo']}**\n\n(Regia: {film['regista']} - Voto: {film['rating']})")
+                    generi_mostrati += 1 
                     
-                    brani_consigliati = ottieni_item_per_genere("catalogo_musica", genere_completo, "popolarita")
-                    if brani_consigliati:
+            if generi_mostrati == 0:
+                st.warning("Nessun film trovato per il tuo profilo.")
+                
+        # 5. Popoliamo la scheda Musica (DYNAMIC FILTERING + COLONNE)
+        with tab_musica:
+            st.write("I 3 generi musicali perfetti per te:")
+            cols_musica = st.columns(3)
+            generi_mostrati = 0
+            
+            for item in ranking_musica:
+                if generi_mostrati >= 3:
+                    break 
+                    
+                genere_completo = item["genere"]
+                nome_pulito = genere_completo.replace("Musica: ", "")
+                distanza = item["distanza"]
+                
+                brani_consigliati = ottieni_item_per_genere("catalogo_musica", genere_completo, "popolarita")
+                
+                if brani_consigliati:
+                    with cols_musica[generi_mostrati]:
+                        st.markdown(f"### {generi_mostrati+1}. {nome_pulito}")
+                        st.markdown(f"*(Distanza: {distanza:.2f})*")
                         for brano in brani_consigliati:
                             if "titolo" in brano and "artista" in brano:
-                                st.info(f"**{brano['titolo']}**\n(Di: {brano['artista']})")
-                    else:
-                        st.warning("Nessun brano trovato.")
+                                st.info(f"**{brano['titolo']}**\n\n(Di: {brano['artista']} - Popolarità: {brano['popolarita']})")
+                    generi_mostrati += 1 
+                    
+            if generi_mostrati == 0:
+                st.warning("Nessun brano trovato per il tuo profilo.")
 
         st.divider()
         
@@ -437,7 +476,7 @@ def main():
                 for item in match:
                     st.write(f"- **{item}**")
             else:
-                st.info("Nessun match esatto al 100% generato con i dati attuali.")
+                st.info("Nessun match esatto generato con i dati attuali.")
 
 if __name__ == "__main__":
     main()

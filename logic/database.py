@@ -9,22 +9,59 @@ except Exception as e:
     print(f"Errore di connessione a Elasticsearch: {e}")
 
 def ottieni_item_per_genere(indice, genere_richiesto, campo_ordinamento, limite=3):
-    """
-    Interroga Elasticsearch per trovare i migliori item di un certo genere.
-    """
-    if es is None or not es.ping():
-        return [{"titolo": "Database offline", "extra": "Assicurati di aver avviato Elasticsearch"}]
+    # 1. DIZIONARIO DI TRADUZIONE (Con prefisso, a prova di collisione!)
+    mappa_traduzioni = {
+        # ==================== FILM ====================
+        "Film: Neo-Noir": "Film-Noir", 
+        "Film: Foreign": "Drama",       
+        "Film: Cartoon": "Animation",
+        "Film: Science Fiction": "Sci-Fi", 
+        "Film: Parody": "Comedy",
+        "Film: Tragedy": "Drama",
+        
+        # ==================== LIBRI ====================
+        "Libri: Comic": "Comics",
+        "Libri: Educational": "Non-Fiction",
+        "Libri: Non Fiction": "Non-Fiction", 
+        "Libri: Humor": "Humor and ComedyHumor and Comedy", 
+        "Libri: War": "History", # Solo per i libri 'War' diventa 'History'!
+        "Libri: Scary": "Horror",
+        
+        # ==================== MUSICA ====================
+        "Musica: Classic": "classical", 
+        "Musica: Rap": "hip-hop",
+        "Musica: Hip Hop": "hip-hop",
+        "Musica: R&B": "r-n-b",            
+        "Musica: Oldies": "rock-n-roll"    
+    }
+    
+    # 2. TRADUZIONE IMMEDIATA
+    # Se la chiave intera (es. "Libri: War") esiste, la traduce in "History".
+    # Se non esiste (es. "Film: War"), la lascia esattamente com'era: "Film: War".
+    genere_tradotto = mappa_traduzioni.get(genere_richiesto, genere_richiesto)
+    
+    # 3. RIMOZIONE DEL PREFISSO 
+    # Ora tagliamo via "Film:", "Libri:" o "Musica:" se sono ancora presenti.
+    if ": " in genere_tradotto:
+        termine_finale = genere_tradotto.split(": ")[1]
+    else:
+        termine_finale = genere_tradotto
 
-    # Costruiamo la query JSON per Elasticsearch
+    # 4. LA QUERY ELASTICSEARCH CON "AND"
     query = {
-        "size": limite, # Vogliamo solo i primi X risultati
+        "size": 3,
         "query": {
             "match": {
-                "genere_motore": genere_richiesto # Es. "Film: Comedy"
+                # ATTENZIONE: Assicurati che "genere_motore" sia il nome VERO 
+                # della colonna su Elasticsearch (potrebbe essere "genere" o "Genre")
+                "genere_motore": { 
+                    "query": termine_finale,
+                    "operator": "and"
+                }
             }
         },
         "sort": [
-            {campo_ordinamento: {"order": "desc"}} # Ordina dal voto/popolarità più alto al più basso
+            {campo_ordinamento: {"order": "desc"}}
         ]
     }
 
