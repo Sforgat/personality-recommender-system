@@ -578,7 +578,12 @@ def main():
                     "Data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "Voto_Libri": st.session_state.voti_ab["libri"],    # "Intelligente" o "Casuale"
                     "Voto_Film": st.session_state.voti_ab["film"],      # "Intelligente" o "Casuale"
-                    "Voto_Musica": st.session_state.voti_ab["musica"]   # "Intelligente" o "Casuale"
+                    "Voto_Musica": st.session_state.voti_ab["musica"],   # "Intelligente" o "Casuale"
+                    "Apertura": risultati_ocean["O"],
+                    "Coscienz": risultati_ocean["C"],
+                    "Estrovers": risultati_ocean["E"],
+                    "Gradevol.": risultati_ocean["A"],
+                    "Nevrotic.": risultati_ocean["N"]
                 }
                 
                 # 2. Creiamo un DataFrame Pandas
