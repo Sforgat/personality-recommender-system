@@ -18,7 +18,7 @@ def ottieni_item_per_genere(indice, genere_richiesto, campo_ordinamento, limite=
         # ==================== LIBRI ====================
         "Libri: Comic": "Comics",
         "Libri: Scary": "Horror",
-        "Libri: Humor": "Humor and ComedyHumor and Comedy", # Manteniamo la patch per il bug del dataset
+        "Libri: Humor": "Humor and ComedyHumor and Comedy",
         
         # ==================== MUSICA ====================
         "Musica: Classic": "classical", 
