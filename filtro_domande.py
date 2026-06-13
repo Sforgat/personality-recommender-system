@@ -20,14 +20,14 @@ def crea_mini_questionario():
         
         domande_20.extend(selezionate)
 
-    # 3. Mescola l'ordine finale per non avere tutte le 'O' vicine, poi le 'C', ecc.
+    # 3. Mescola l'ordine finale 
     random.shuffle(domande_20)
 
-    # 4. Salva il nuovo dataset ridotto
+   
     with open("data/domande_20.json", "w", encoding="utf-8") as f:
         json.dump(domande_20, f, indent=4, ensure_ascii=False)
 
-    print(f"Fatto! Creato domande_20.json con {len(domande_20)} item perfettamente bilanciati.")
+    print(f"Creato domande_20.json con {len(domande_20)} item perfettamente bilanciati.")
 
 if __name__ == "__main__":
     crea_mini_questionario()

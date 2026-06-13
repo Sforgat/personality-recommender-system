@@ -11,7 +11,7 @@ import os
 import pandas as pd
 from datetime import datetime
 
-# 1. Configurazione globale della pagina
+
 st.set_page_config(page_title="Personality Recommender", page_icon="🧠", layout="wide")
 
 NOMI_OCEAN = {
@@ -45,7 +45,7 @@ def genera_raccomandazioni_casuali():
 def disegna_blocco_raccomandazioni(ranking_libri, ranking_film, ranking_musica):
     tab_libri, tab_film, tab_musica = st.tabs(["📚 Libri", "🎬 Film", "🎵 Musica"])
     
-    # --- SCHEDA LIBRI ---
+    # SCHEDA LIBRI
     with tab_libri:
         cols_libri = st.columns(3)
         generi_mostrati = 0
@@ -66,7 +66,7 @@ def disegna_blocco_raccomandazioni(ranking_libri, ranking_film, ranking_musica):
                 generi_mostrati += 1 
         if generi_mostrati == 0: st.warning("Nessun libro trovato.")
 
-    # --- SCHEDA FILM ---
+    # SCHEDA FILM
     with tab_film:
         cols_film = st.columns(3)
         generi_mostrati = 0 
@@ -85,7 +85,7 @@ def disegna_blocco_raccomandazioni(ranking_libri, ranking_film, ranking_musica):
                 generi_mostrati += 1 
         if generi_mostrati == 0: st.warning("Nessun film trovato.")
 
-    # --- SCHEDA MUSICA ---
+    # SCHEDA MUSICA
     with tab_musica:
         cols_musica = st.columns(3)
         generi_mostrati = 0
@@ -134,7 +134,7 @@ def main():
     # opzioni = ["1", "2", "3", "4", "5"]
     opzioni = ["5", "4", "3", "2", "1"] # cambiato ordine perchè in CSS si fa inversione
 
-    # FASE 1: ONBOARDING
+    
     if st.session_state.current_page == "onboarding":
         _, col_central, _ = st.columns([1, 2, 1])
         with col_central:
@@ -157,7 +157,7 @@ def main():
                 st.session_state.quiz_step = 1
                 st.rerun()
 
-    # FASE 2: QUIZ A BLOCCHI
+    # QUIZ A BLOCCHI
     elif st.session_state.current_page == "quiz":
         st.markdown("""
             <style>
@@ -313,7 +313,7 @@ def main():
             </style>
         """, unsafe_allow_html=True)
 
-        # Contenitore centrale impostato a 3.0 per mantenere la griglia centrata
+        
         _, col_central, _ = st.columns([0.5, 3.0, 0.5])
         with col_central:
             st.title("Scopri il tuo Profilo Psicologico")
@@ -375,14 +375,14 @@ def main():
             st.divider()
             st.info("Modalità Sviluppatore attiva")
             if st.button("Compila tutto a caso", use_container_width=True):
-                st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
+                #st.session_state.scelta_genere = random.choice(["Uomo", "Donna"])
                 st.session_state.dev_mode = True
                 for domanda in domande:
                     st.session_state.risposte_utente[domanda['id']] = random.choice(opzioni)
                 st.session_state.current_page = "results"
                 st.rerun()
 
-    # FASE 3: SCHERMATA RISULTATI
+    # SCHERMATA RISULTATI
     elif st.session_state.current_page == "results":
         st.title("I Tuoi Risultati")
         
@@ -431,7 +431,7 @@ def main():
                 st.session_state.current_page = "recommendations"
                 st.rerun()
 
-    # FASE 4: SCHERMATA RACCOMANDAZIONI
+    # SCHERMATA RACCOMANDAZIONI
     elif st.session_state.current_page == "recommendations":
         st.title("Le Tue Raccomandazioni")
         st.write("In base al tuo profilo psicologico calcolato, ecco i contenuti ideali suddivisi per genere affine:")
@@ -456,7 +456,7 @@ def main():
 
         ranking_libri_rand, ranking_film_rand, ranking_musica_rand = st.session_state.ranking_rand
         
-        # 3. Disegnamo i due blocchi nell'ordine casuale
+        # 3. blocchi nell'ordine casuale
         for i, modello in enumerate(st.session_state.ab_order):
             nome_blocco = "Pacchetto A" if i == 0 else "Pacchetto B"
             st.subheader(f"{nome_blocco}")
@@ -470,7 +470,7 @@ def main():
 
 
         
-        # --- INIEZIONE CSS PER COLORI BOTTONI ---
+        # COLORI BOTTONI
         st.markdown("""
         <style>
         /* 1. Colore di base per tutti i bottoni 'primary' (BLU PER IL BOTTONE DI INVIO) */
@@ -501,11 +501,11 @@ def main():
         """, unsafe_allow_html=True)
 
 
-        # 4. Area di Voto Granulare (Con salvataggio e possibilità di cambio)
+        # 4. Area di Voto 
         st.subheader("Vota le selezioni migliori")
         st.write("L'algoritmo potrebbe aver indovinato i tuoi gusti per i film, ma non per la musica! **Vota separatamente per ciascuna categoria:** quale pacchetto ti ha convinto di più? (Puoi cambiare idea cliccando sull'altra opzione)")
         
-        # --- VOTO LIBRI ---
+        # VOTO LIBRI
         st.markdown("#### 📚 Categoria Libri")
         col_voto_L1, col_voto_L2 = st.columns(2)
         with col_voto_L1:
@@ -525,7 +525,7 @@ def main():
                 st.rerun()
                 
                 
-        # --- VOTO FILM ---
+        # VOTO FILM 
         st.markdown("#### 🎬 Categoria Film")
         col_voto_F1, col_voto_F2 = st.columns(2)
         with col_voto_F1:
@@ -545,7 +545,7 @@ def main():
                 st.rerun()
       
                 
-        # --- VOTO MUSICA ---
+        # VOTO MUSICA 
         st.markdown("#### 🎵 Categoria Musica")
         col_voto_M1, col_voto_M2 = st.columns(2)
         with col_voto_M1:
@@ -565,7 +565,7 @@ def main():
                 st.rerun()
                 
         
-        # --- SALVATAGGIO DATI 
+        # SALVATAGGIO DATI 
 
         # Controlliamo se l'utente ha votato tutto
         tutti_votati = all(voto is not None for voto in st.session_state.voti_ab.values())
@@ -583,7 +583,8 @@ def main():
                     "Coscienz": risultati_ocean["C"],
                     "Estrovers": risultati_ocean["E"],
                     "Gradevol.": risultati_ocean["A"],
-                    "Nevrotic.": risultati_ocean["N"]
+                    "Nevrotic.": risultati_ocean["N"],
+                    "Genere": st.session_state.scelta_genere
                 }
                 
                 # 2. Creiamo un DataFrame Pandas
@@ -598,12 +599,12 @@ def main():
                     # Se è il primo voto in assoluto, creiamo il file con le intestazioni
                     df_nuovo.to_csv(file_csv, mode='w', header=True, index=False)
                 
-                st.balloons() # Una piccola animazione per gratificare l'utente!
+                st.balloons()
                 st.success("Risultati salvati con successo nel database! Grazie per aver partecipato.")
         else:
             st.info("Vota tutte e tre le categorie (Libri, Film e Musica) per poter inviare i risultati.")
 
-        # --- BOTTONI DI RITORNO 
+        # BOTTONI DI RITORNO 
         st.divider()
         
         col_back1, col_back2 = st.columns([1, 1])

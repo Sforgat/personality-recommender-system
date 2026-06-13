@@ -19,7 +19,6 @@ def calcola_distanza(profilo_utente, profilo_genere):
     )
     return distanza
 
-# AGGIUNTO IL PARAMETRO genere_selezionato
 def approccio_euclideo(profilo_norm, genere_selezionato):
     risultati = []
     for genere_item, stereotipi_demografici in STEREOTIPI_GENERI.items():
@@ -43,7 +42,7 @@ def approccio_rule_based(profilo_norm, genere_utente):
     A = profilo_norm['A']
     N = profilo_norm['N']
 
-    # Uniamo le liste restituite dalle tre funzioni
+   
     raccomandazioni_forti = (
         calcola_regole_film(O, C, E, A, N, genere_utente) +
         calcola_regole_musica(O, C, E, A, N, genere_utente) +
@@ -62,22 +61,21 @@ def genera_raccomandazioni(profilo_grezzo, genere_selezionato="all"):
     match_apriori = approccio_rule_based(profilo_norm, genere_selezionato)
     ranking_euclideo = approccio_euclideo(profilo_norm, genere_selezionato)
     
-    # 2. Inizializziamo le strutture per la fusione (Boosting)
-    ranking_completo = []
-    generi_inseriti = set() # Usiamo un set per una ricerca super veloce dei duplicati
     
-    # 3. Priorità Assoluta: inseriamo prima i match Rule-Based
+    ranking_completo = []
+    generi_inseriti = set() 
+    
+    # 3.Prima i match Rule-Based
     for match in match_apriori:
         ranking_completo.append({"genere": match, "distanza": 0.0})
         generi_inseriti.add(match)
         
-    # 4. Fallback: accodiamo i risultati Euclidei, saltando quelli già presenti
+    # 4. Accodiamo i risultati Euclidei, saltando quelli già presenti
     for item in ranking_euclideo:
         if item["genere"] not in generi_inseriti:
             ranking_completo.append(item)
             generi_inseriti.add(item["genere"])
             
-    # 5. Ritorno dei dati aggiornati
     return {
         "profilo_normalizzato": profilo_norm,
         "ranking_completo": ranking_completo, # Ora contiene la lista fusa e ordinata!

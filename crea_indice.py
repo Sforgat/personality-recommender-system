@@ -23,10 +23,10 @@ def crea_indici():
         if es.indices.exists(index=indice):
             es.indices.delete(index=indice)
             
-        # Creiamo l'indice dicendogli: 0 repliche e NON ASPETTARE!
+        # Creiamo l'indice
         es.indices.create(
             index=indice, 
-            wait_for_active_shards="0",  # <--- Il comando che azzera i 30 secondi
+            wait_for_active_shards="0",  # comando che azzera i 30 secondi
             body={
                 "settings": {
                     "number_of_replicas": 0
@@ -61,7 +61,6 @@ def indicizza_film():
         azioni.append(doc)
         
     try:
-        # Usiamo .options() come richiesto dalla nuova versione, con ben 300 secondi di pazienza!
         helpers.bulk(es.options(request_timeout=300, max_retries=5), azioni, chunk_size=100)
         print(f"Inseriti {len(azioni)} item.")
     except BulkIndexError as e:
@@ -77,13 +76,11 @@ def indicizza_musica():
     df = pd.read_csv("data/spotify-tracks-dataset.csv")
     df = df.fillna("")
 
-    # Prendiamo solo le 100 canzoni più popolari per ogni genere (altrimenti sarebbero 114mila item da indicizzare, 
-    # sbilanciato rispetto ai libri e ai film che sono 1000)
     df['popularity'] = pd.to_numeric(df['popularity'], errors='coerce').fillna(0)
     # 2. Prima ordiniamo tutto l'elenco dal più famoso al meno famoso
     df = df.sort_values(by='popularity', ascending=False)
     
-    # 3. IL TOCCO MAGICO: Raggruppiamo per genere e prendiamo solo i primi 100 per ogni categoria
+    # 3. Raggruppiamo per genere e prendiamo solo i primi 100 per ogni categoria
     df = df.groupby('track_genre').head(50)
 
     azioni = []
@@ -103,14 +100,13 @@ def indicizza_musica():
         }
         azioni.append(doc)
         
-        # Inseriamo a blocchi di 10.000 per non saturare la RAM, dato che il file è grande
+        # Inseriamo a blocchi di 10.000 per non saturare la RAM
         if len(azioni) >= 10000:
             try:
                 helpers.bulk(es.options(request_timeout=300, max_retries=5), azioni, chunk_size=100)
                 print(f"Inseriti {len(azioni)} item musicali.")
             except BulkIndexError as e:
                 print("ERRORE SUI DATI! Ecco i dettagli del primo documento fallito:")
-                # Stampa i dettagli del primo errore riscontrato
                 print(e.errors[0])
             except Exception as e:
                 print(f"ERRORE DI RETE/TIMEOUT: {e}")
@@ -122,7 +118,6 @@ def indicizza_musica():
             print(f"Inseriti {len(azioni)} item musicali.")
         except BulkIndexError as e:
             print("ERRORE SUI DATI! Ecco i dettagli del primo documento fallito:")
-            # Stampa i dettagli del primo errore riscontrato
             print(e.errors[0])
         except Exception as e:
             print(f"ERRORE DI RETE/TIMEOUT: {e}")
@@ -133,7 +128,7 @@ def indicizza_libri():
     df = pd.read_csv("data/bookstoscrape.csv", encoding="latin-1")
     df = df.fillna("")
     
-    # Mappa per convertire il testo in numeri veri
+    # Mappa per convertire il testo in numeri 
     mappa_voti = {
         "One": 1,
         "Two": 2,

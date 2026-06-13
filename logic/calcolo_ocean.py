@@ -16,7 +16,7 @@ def calcola_punteggi(risposte_utente, lista_domande):
     mappa_domande = {d['id']: d for d in lista_domande}
 
     for id_domanda, risposta_stringa in risposte_utente.items():
-        # Estraiamo il numero dalla stringa (es. da "5 - Molto preciso" prendiamo il 5)
+        # Estraiamo il numero dalla stringa 
         valore_risposta = int(risposta_stringa.split(" - ")[0])
         
         # Recuperiamo i metadati della domanda dal nostro dataset
